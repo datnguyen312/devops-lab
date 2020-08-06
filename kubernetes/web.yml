@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pet-demo-service
+spec:
+  type: NodePort
+  selector:
+    app: pet-demo
+  ports:
+  - port: 5000
+    name: primary
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pet-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pet-demo
+  template:
+    metadata:
+      labels:
+        app: pet-demo
+    spec:
+      containers:
+      - name: pet-demo
+        image: pet-demo:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        env:
+          - name: DATABASE_URI
+            valueFrom:
+              secretKeyRef:
+                name: pet-creds
+                key: binding
